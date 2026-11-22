@@ -12,7 +12,6 @@ import {
   BookOpen,
   FileSpreadsheet,
   BarChart3,
-  Sparkles,
   Wallet,
   Settings,
   HelpCircle,
@@ -64,7 +63,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     { label: 'Vendor Directory', path: '/suppliers', icon: Building2 },
     { label: 'Double-Entry Ledgers', path: '/accounting', icon: BookOpen },
     { label: 'GST Tax Center', path: '/gst', icon: FileSpreadsheet },
-    { label: 'AI Intelligence Engine', path: '/automation', icon: Sparkles },
     { label: 'Personal Finance Space', path: '/personal-finance', icon: Wallet },
   ];
 

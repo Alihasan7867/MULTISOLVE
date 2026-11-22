@@ -18,7 +18,6 @@ import accountingRoutes from './routes/accountingRoutes.js';
 import taxRoutes from './routes/taxRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import personalFinanceRoutes from './routes/personalFinanceRoutes.js';
-import aiAutomationRoutes from './routes/aiAutomationRoutes.js';
 
 dotenv.config();
 
@@ -47,7 +46,6 @@ app.use('/api/accounting', accountingRoutes);
 app.use('/api/tax', taxRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/personal-finance', personalFinanceRoutes);
-app.use('/api/automation', aiAutomationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

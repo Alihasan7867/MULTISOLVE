@@ -16,9 +16,7 @@ import { ExpensesPage } from './pages/ExpensesPage';
 import { AccountingPage } from './pages/AccountingPage';
 import { GstPage } from './pages/GstPage';
 import { ReportsPage } from './pages/ReportsPage';
-import { MultiBusinessPage } from './pages/MultiBusinessPage';
 import { PersonalFinancePage } from './pages/PersonalFinancePage';
-import { AutomationAiPage } from './pages/AutomationAiPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { HelpCenterPage } from './pages/HelpCenterPage';
 import { LoginPage } from './pages/LoginPage';
@@ -73,9 +71,7 @@ export const App: React.FC = () => {
               <Route path="accounting" element={<AccountingPage />} />
               <Route path="gst" element={<GstPage />} />
               <Route path="reports" element={<ReportsPage />} />
-              <Route path="multi-business" element={<MultiBusinessPage />} />
               <Route path="personal-finance" element={<PersonalFinancePage />} />
-              <Route path="automation" element={<AutomationAiPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="help" element={<HelpCenterPage />} />
             </Route>

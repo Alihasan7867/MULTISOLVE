@@ -59,22 +59,10 @@ MULTISOLVE is a unified business, accounting, inventory, and finance management 
 - GSTR-3B summary (Output GST liability minus eligible Input Tax Credit = Net Payable).
 - Exportable CSV tax ledger.
 
-### 6. Multi-Business Management
-- Database-level isolation for managing multiple distinct business entities.
-- Zero data leakage: independent customer lists, vendor directories, products, stock counts, and financial ledgers.
-- Seamless context switching from top navigation bar.
-
-### 7. Personal Finance Separation
+### 6. Personal Finance Separation
 - Dedicated personal finance space segregated from company balance sheets.
 - Track personal drawings, monthly living expense categories, and SIP/investment buckets.
 - Monthly budget caps with real-time visual progress bars.
-
-### 8. AI & Automation Intelligence
-- **Invoice OCR Parser:** Extracts document numbers, dates, GSTINs, and totals from scanned bills.
-- **Smart Expense Categorizer:** Intelligent narration classification into ledger accounts.
-- **Duplicate Detection:** Prevents accidental double-entry of invoices and bills.
-- **Natural Language Financial Assistant:** Answers plain English queries about earnings, low stock, and debts.
-- **Forward Cash Flow Projections:** 30-day and 60-day cash forecasting based on receivable due dates.
 
 ---
 

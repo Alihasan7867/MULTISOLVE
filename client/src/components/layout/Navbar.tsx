@@ -34,15 +34,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCommandPalette,
 }) => {
   const { user, logout } = useAuth();
-  const { businesses, activeBusiness, setActiveBusiness } = useBusiness();
+  const { activeBusiness } = useBusiness();
   const navigate = useNavigate();
 
-  const [businessDropdownOpen, setBusinessDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [quickActionOpen, setQuickActionOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  const businessDropdownRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const quickActionRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -62,9 +60,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (businessDropdownRef.current && !businessDropdownRef.current.contains(event.target as Node)) {
-        setBusinessDropdownOpen(false);
-      }
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
         setUserDropdownOpen(false);
       }
@@ -171,59 +166,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Business Selector Dropdown */}
-        <div className="relative" ref={businessDropdownRef}>
-          <button
-            onClick={() => setBusinessDropdownOpen(!businessDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#EAEAEA] bg-[#F5F5F5] hover:bg-white transition-colors text-xs font-semibold text-[#171717]"
-          >
-            <Building size={14} className="text-[#174D40]" />
-            <span className="max-w-[120px] truncate">
-              {activeBusiness ? activeBusiness.name : 'Select Business'}
-            </span>
-            <ChevronDown size={14} className="text-[#929292]" />
-          </button>
-
-          {businessDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#EAEAEA] py-2 z-50">
-              <div className="px-3 py-1.5 text-[11px] font-bold text-[#929292] uppercase tracking-wider">
-                Switch Business
-              </div>
-              <div className="max-h-60 overflow-y-auto">
-                {businesses.map((b) => (
-                  <button
-                    key={b.id}
-                    onClick={() => {
-                      setActiveBusiness(b);
-                      setBusinessDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 flex items-center justify-between text-sm hover:bg-[#F5F5F5] transition-colors ${
-                      activeBusiness?.id === b.id ? 'bg-[#E8F8DE]/50 font-semibold text-[#174D40]' : 'text-[#171717]'
-                    }`}
-                  >
-                    <div className="truncate">
-                      <div className="truncate">{b.name}</div>
-                      <div className="text-[11px] text-[#929292]">{b.type}</div>
-                    </div>
-                    {activeBusiness?.id === b.id && (
-                      <CheckCircle2 size={16} className="text-[#174D40] flex-shrink-0 ml-2" />
-                    )}
-                  </button>
-                ))}
-              </div>
-              <div className="border-t border-[#EAEAEA] mt-1 pt-1">
-                <button
-                  onClick={() => {
-                    setBusinessDropdownOpen(false);
-                    navigate('/multi-business?new=true');
-                  }}
-                  className="w-full text-left px-3 py-2 text-xs text-[#174D40] hover:bg-[#F5F5F5] font-semibold flex items-center gap-1.5"
-                >
-                  <Plus size={14} /> Add New Business
-                </button>
-              </div>
-            </div>
-          )}
+        {/* Business Identity Indicator */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#EAEAEA] bg-[#F5F5F5] text-xs font-semibold text-[#171717]">
+          <Building size={14} className="text-[#174D40]" />
+          <span className="max-w-[150px] truncate">
+            {activeBusiness ? activeBusiness.name : 'MULTISOLVE'}
+          </span>
         </div>
 
         {/* Notifications */}

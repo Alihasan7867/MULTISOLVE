@@ -13,13 +13,11 @@ import {
   BookOpen,
   FileSpreadsheet,
   BarChart3,
-  Layers,
   Wallet,
   Settings,
   HelpCircle,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -62,8 +60,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { path: '/customers', label: 'Customers', icon: Users },
         { path: '/suppliers', label: 'Suppliers', icon: Building2 },
-        { path: '/multi-business', label: 'Multi-business', icon: Layers },
-        { path: '/automation', label: 'AI Automation', icon: Sparkles },
       ],
     },
     {
