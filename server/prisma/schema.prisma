@@ -1,0 +1,409 @@
+// MULTISOLVE Enterprise Database Schema
+// Unified Business, Accounting, Inventory and Finance Management
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  passwordHash        String
+  name                String
+  phone               String?
+  avatar              String?
+  role                String               @default("ADMIN") // ADMIN, MANAGER, ACCOUNTANT, VIEWER
+  memberships         BusinessMember[]
+  auditLogs           AuditLog[]
+  personalTxns        PersonalTransaction[]
+  personalBudgets     PersonalBudget[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+}
+
+model Business {
+  id                  String               @id @default(uuid())
+  name                String
+  type                String               // Retail, Wholesale, Services, Manufacturing, etc.
+  ownerName           String
+  email               String
+  phone               String
+  address             String
+  city                String
+  state               String
+  pinCode             String
+  country             String               @default("India")
+  gstin               String?
+  currency            String               @default("INR")
+  monthlySalesGoal    Float                @default(500000)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  members             BusinessMember[]
+  categories          ProductCategory[]
+  products            Product[]
+  customers           Customer[]
+  suppliers           Supplier[]
+  purchases           Purchase[]
+  sales               Sale[]
+  inventoryMovements  InventoryMovement[]
+  expenseCategories   ExpenseCategory[]
+  expenses            Expense[]
+  accounts            Account[]
+  journalEntries      JournalEntry[]
+  taxRecords          TaxRecord[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+}
+
+model BusinessMember {
+  id         String   @id @default(uuid())
+  businessId String
+  userId     String
+  role       String   @default("OWNER") // OWNER, ADMIN, MANAGER, ACCOUNTANT, VIEWER
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([businessId, userId])
+}
+
+model ProductCategory {
+  id          String    @id @default(uuid())
+  businessId  String
+  name        String
+  description String?
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+
+  @@unique([businessId, name])
+}
+
+model Product {
+  id             String              @id @default(uuid())
+  businessId     String
+  categoryId     String?
+  name           String
+  sku            String
+  description    String?
+  purchasePrice  Float
+  sellingPrice   Float
+  initialStock   Float               @default(0)
+  currentStock   Float               @default(0)
+  minStockAlert  Float               @default(5)
+  unit           String              @default("PCS") // PCS, KG, BOX, MTR, etc.
+  hsnCode        String?
+  taxRate        Float               @default(18.0) // 0, 5, 12, 18, 28
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  business       Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  category       ProductCategory?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  purchaseItems  PurchaseItem[]
+  saleItems      SaleItem[]
+  stockMovements InventoryMovement[]
+
+  @@unique([businessId, sku])
+}
+
+model Customer {
+  id             String    @id @default(uuid())
+  businessId     String
+  name           String
+  phone          String
+  email          String?
+  address        String?
+  city           String?
+  state          String?
+  gstin          String?
+  customerType   String    @default("Regular") // Regular, Wholesale, Corporate
+  openingBalance Float     @default(0)
+  currentBalance Float     @default(0) // Positive = owes money (Receivable)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  business       Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  sales          Sale[]
+}
+
+model Supplier {
+  id             String     @id @default(uuid())
+  businessId     String
+  name           String
+  contactPerson  String?
+  phone          String
+  email          String?
+  address        String?
+  city           String?
+  state          String?
+  gstin          String?
+  openingBalance Float      @default(0)
+  currentBalance Float      @default(0) // Positive = we owe money (Payable)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  business       Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  purchases      Purchase[]
+}
+
+model Purchase {
+  id             String         @id @default(uuid())
+  businessId     String
+  supplierId     String
+  purchaseNumber String
+  date           DateTime       @default(now())
+  subtotal       Float
+  discount       Float          @default(0)
+  taxAmount      Float          @default(0)
+  grandTotal     Float
+  amountPaid     Float          @default(0)
+  paymentStatus  String         @default("PAID") // PAID, PARTIAL, UNPAID
+  paymentMethod  String         @default("BANK_TRANSFER") // CASH, UPI, BANK_TRANSFER, CHEQUE
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  business       Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  supplier       Supplier       @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  items          PurchaseItem[]
+
+  @@unique([businessId, purchaseNumber])
+}
+
+model PurchaseItem {
+  id          String   @id @default(uuid())
+  purchaseId  String
+  productId   String
+  quantity    Float
+  unitPrice   Float
+  discount    Float    @default(0)
+  taxRate     Float    @default(18.0)
+  taxAmount   Float    @default(0)
+  totalAmount Float
+
+  purchase    Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model Sale {
+  id               String     @id @default(uuid())
+  businessId       String
+  customerId       String
+  invoiceNumber    String
+  date             DateTime   @default(now())
+  dueDate          DateTime?
+  subtotal         Float
+  discount         Float      @default(0)
+  taxAmount        Float      @default(0)
+  grandTotal       Float
+  amountReceived   Float      @default(0)
+  remainingBalance Float      @default(0)
+  paymentStatus    String     @default("PAID") // PAID, PARTIAL, UNPAID
+  paymentMethod    String     @default("UPI") // CASH, UPI, BANK_TRANSFER, CHEQUE, OTHER
+  isInterState     Boolean    @default(false)
+  notes            String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  business         Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customer         Customer   @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  items            SaleItem[]
+
+  @@unique([businessId, invoiceNumber])
+}
+
+model SaleItem {
+  id          String   @id @default(uuid())
+  saleId      String
+  productId   String
+  description String?
+  quantity    Float
+  unitPrice   Float
+  discount    Float    @default(0)
+  taxRate     Float    @default(18.0)
+  taxAmount   Float    @default(0)
+  totalAmount Float
+
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model InventoryMovement {
+  id            String   @id @default(uuid())
+  businessId    String
+  productId     String
+  type          String   // PURCHASE, SALE, ADJUSTMENT, RETURN
+  quantity      Float    // Positive for additions, negative for deductions
+  previousStock Float
+  updatedStock  Float
+  referenceType String?  // SALE, PURCHASE, MANUAL_ADJUSTMENT
+  referenceId   String?  // Invoice number or ID
+  reason        String?
+  date          DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model ExpenseCategory {
+  id          String    @id @default(uuid())
+  businessId  String
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  expenses    Expense[]
+
+  @@unique([businessId, name])
+}
+
+model Expense {
+  id              String          @id @default(uuid())
+  businessId      String
+  categoryId      String
+  title           String
+  amount          Float
+  date            DateTime        @default(now())
+  description     String?
+  paymentMethod   String          @default("BANK_TRANSFER") // CASH, UPI, BANK_TRANSFER, CARD
+  referenceNumber String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  business        Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  category        ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+}
+
+model Account {
+  id                String              @id @default(uuid())
+  businessId        String
+  code              String
+  name              String
+  type              String              // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+  balance           Float               @default(0)
+  isDefault         Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+
+  business          Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  journalEntryLines JournalEntryLine[]
+
+  @@unique([businessId, code])
+}
+
+model JournalEntry {
+  id              String             @id @default(uuid())
+  businessId      String
+  entryNumber     String
+  date            DateTime           @default(now())
+  description     String
+  referenceType   String?            // SALE, PURCHASE, EXPENSE, MANUAL
+  referenceId     String?
+  isAutoGenerated Boolean            @default(true)
+  isReversed      Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+
+  business        Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  lines           JournalEntryLine[]
+
+  @@unique([businessId, entryNumber])
+}
+
+model JournalEntryLine {
+  id             String       @id @default(uuid())
+  journalEntryId String
+  accountId      String
+  type           String       // DEBIT, CREDIT
+  amount         Float
+  description    String?
+
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  account        Account      @relation(fields: [accountId], references: [id], onDelete: Restrict)
+}
+
+model TaxRecord {
+  id            String   @id @default(uuid())
+  businessId    String
+  referenceType String   // SALE (Output GST), PURCHASE (Input GST)
+  referenceId   String   // Sale or Purchase ID / Number
+  date          DateTime @default(now())
+  partyGstin    String?
+  partyName     String?
+  hsnCode       String?
+  taxableAmount Float
+  cgstRate      Float    @default(0)
+  cgstAmount    Float    @default(0)
+  sgstRate      Float    @default(0)
+  sgstAmount    Float    @default(0)
+  igstRate      Float    @default(0)
+  igstAmount    Float    @default(0)
+  totalTax      Float    @default(0)
+  isInterState  Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model PersonalTransaction {
+  id            String   @id @default(uuid())
+  userId        String
+  type          String   // INCOME, EXPENSE
+  category      String
+  amount        Float
+  date          DateTime @default(now())
+  description   String?
+  paymentMethod String   @default("UPI")
+  savingsBucket String?  // Emergency Fund, Investments, Vacation, etc.
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PersonalBudget {
+  id           String   @id @default(uuid())
+  userId       String
+  category     String
+  monthlyLimit Float
+  monthYear    String   // e.g. "2026-11"
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category, monthYear])
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  businessId String
+  userId     String?
+  title      String
+  message    String
+  type       String   @default("INFO") // INFO, WARNING, ALERT, SUCCESS
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  businessId String
+  userId     String?
+  action     String   // CREATE_INVOICE, CREATE_PURCHASE, ADJUST_STOCK, etc.
+  entity     String   // Sale, Product, Customer, Expense, etc.
+  entityId   String
+  details    String?  // JSON string
+  createdAt  DateTime @default(now())
+
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
